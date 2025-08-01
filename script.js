@@ -93,14 +93,24 @@ function drawScore() {
 }
 
 function drawLeaderboard() {
-    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard.sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0));
     const list = document.getElementById('leaderboardList');
     list.innerHTML = '';
+    let valid = true;
     leaderboard.slice(0, 5).forEach((entry, i) => {
+        // Eğer entry eksikse, bozuk veri var demektir
+        if (!entry || typeof entry.name !== 'string' || typeof entry.score !== 'number') valid = false;
+        const name = entry && typeof entry.name === 'string' ? entry.name : 'Bilinmiyor';
+        const score = entry && typeof entry.score === 'number' ? entry.score : 0;
         const li = document.createElement('li');
-        li.textContent = `${i + 1}. ${entry.name}: ${entry.score} puan`;
+        li.textContent = `${i + 1}. ${name}: ${score} puan`;
         list.appendChild(li);
     });
+    // Eğer bozuk veri varsa, localStorage'dan temizle
+    if (!valid) {
+        localStorage.removeItem('snakeLeaderboard');
+        leaderboard = [];
+    }
 }
 
 function collision(head, arr) {
